@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using TrybeHotel.Models;
 using TrybeHotel.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using TrybeHotel.Dto;
 
@@ -24,7 +22,14 @@ namespace TrybeHotel.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Authorize(Policy = "Client")]
         public IActionResult Add([FromBody] BookingDtoInsert bookingInsert){
-            throw new NotImplementedException();
+            var token = HttpContext.User.Identity as ClaimsIdentity;
+            var email = token?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            if (email == null) return Unauthorized();
+
+            var bookingValid =_repository.Add(bookingInsert, email!);
+            if (bookingValid == null) return BadRequest(new { message = "Guest quantity over room capacity"});
+            return Created("", bookingValid);
+            
         }
 
 
@@ -32,7 +37,14 @@ namespace TrybeHotel.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Authorize(Policy = "Client")]
         public IActionResult GetBooking(int Bookingid){
-            throw new NotImplementedException();
+            var token = HttpContext.User.Identity as ClaimsIdentity;
+            var email = token?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            if (email == null) return Unauthorized();
+
+            var booking = _repository.GetBooking(Bookingid, email!);
+            if (booking == null) return Unauthorized();
+            return Ok(booking);
+
         }
     }
 }
