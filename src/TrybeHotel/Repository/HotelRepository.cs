@@ -46,6 +46,9 @@ namespace TrybeHotel.Repository
                 cityName = (from city in _context.Cities
                             where city.CityId == hotel.CityId
                             select city.Name).FirstOrDefault(),
+                state = (from city in _context.Cities
+                            where city.CityId == hotel.CityId
+                            select city.State).FirstOrDefault(),
             };
         }
     }
