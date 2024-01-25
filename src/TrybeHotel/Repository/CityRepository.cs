@@ -32,6 +32,7 @@ namespace TrybeHotel.Repository
             {
                 cityId = city.CityId,
                 name = city.Name,
+                state = city.State,
             };
         }
 

@@ -22,21 +22,19 @@ namespace TrybeHotel.Controllers
         }
 
         // 11. Desenvolva o endpoint GET /geo/status
-       /*  [HttpGet]
+        [HttpGet]
         [Route("status")]
         public async Task<IActionResult> GetStatus()
         {
             throw new NotImplementedException();
-        } */
+        } 
 
         // 12. Desenvolva o endpoint GET /geo/address
-      /*   [HttpGet]
+        [HttpGet]
         [Route("address")]
         public async Task<IActionResult> GetHotelsByLocation([FromBody] GeoDto address)
         {
             throw new NotImplementedException();
-        } */
+        }
     }
-
-
 }
