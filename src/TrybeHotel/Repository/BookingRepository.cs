@@ -56,6 +56,7 @@ namespace TrybeHotel.Repository
                         address = bookingAdded.Room.Hotel.Address,
                         cityId = bookingAdded.Room.Hotel.CityId,
                         cityName = bookingAdded.Room.Hotel.City!.Name,
+                        state = bookingAdded.Room.Hotel.City!.State,
                     },
                 }
             };
@@ -92,6 +93,7 @@ namespace TrybeHotel.Repository
                         address = booking.Room.Hotel.Address,
                         cityId = booking.Room.Hotel.CityId,
                         cityName = booking.Room.Hotel.City!.Name,
+                        state = booking.Room.Hotel.City!.State,
                     },
                 }
             };
