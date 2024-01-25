@@ -1,5 +1,6 @@
 using TrybeHotel.Models;
 using TrybeHotel.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace TrybeHotel.Repository
 {
@@ -39,7 +40,27 @@ namespace TrybeHotel.Repository
              _context.Rooms.Add(room);
             _context.SaveChanges();
 
-            return GetRooms(room.HotelId).Last();
+            var roomAdded = _context.Rooms
+                .Include(r => r.Hotel)
+                .ThenInclude(h => h!.City)
+                .FirstOrDefault(r => r.RoomId == room.RoomId);
+            
+            return new RoomDto 
+            {
+                roomId = roomAdded!.RoomId,
+                name = roomAdded.Name,
+                capacity = roomAdded.Capacity,
+                image = roomAdded.Image,
+                hotel = new HotelDto
+                        {
+                            hotelId = roomAdded.Hotel!.HotelId,
+                            name = roomAdded.Hotel.Name,
+                            address = roomAdded.Hotel.Address,
+                            cityId = roomAdded.Hotel.CityId,
+                            cityName = roomAdded.Hotel.City!.Name,
+                            state = roomAdded.Hotel.City!.State,
+                        }
+            };
         }
 
         public void DeleteRoom(int RoomId) 
