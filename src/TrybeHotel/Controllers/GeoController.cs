@@ -19,6 +19,7 @@ namespace TrybeHotel.Controllers
         {
             _repository = repository;
             _geoService = geoService;
+       
         }
 
         // 11. Desenvolva o endpoint GET /geo/status
@@ -26,7 +27,12 @@ namespace TrybeHotel.Controllers
         [Route("status")]
         public async Task<IActionResult> GetStatus()
         {
-            throw new NotImplementedException();
+            var resultStatus = await _geoService.GetGeoStatus();
+            if (resultStatus == null)
+            {
+                return BadRequest();
+            }
+            return Ok(resultStatus);
         } 
 
         // 12. Desenvolva o endpoint GET /geo/address
