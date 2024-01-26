@@ -21,25 +21,53 @@ namespace TrybeHotel.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                return default!;
+                return default(Object);
             }
             var responseGeo = await response.Content.ReadFromJsonAsync<object>();
-            return responseGeo!;
+            return responseGeo;
         }
         
         // 12. Desenvolva o endpoint GET /geo/address
         public async Task<GeoDtoResponse> GetGeoLocation(GeoDto geoDto)
         {
-            throw new NotImplementedException();
+            var response = await _client.GetAsync($"https://nominatim.openstreetmap.org/search?street={geoDto.Address}&city={geoDto.City}&country=Brazil&state={geoDto.State}&format=json&limit=1");
+            response.Headers.Add("Accept", "application/json");
+            response.Headers.Add("User-Agent", "aspnet-user-agent");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return default(GeoDtoResponse);
+            }
+            var responseGeo = await response.Content.ReadFromJsonAsync<List<GeoDtoResponse>>();
+            return new GeoDtoResponse 
+            {
+                lat = responseGeo[0].lat, 
+                lon = responseGeo[0].lon 
+            };
         }
 
         // 12. Desenvolva o endpoint GET /geo/address
         public async Task<List<GeoDtoHotelResponse>> GetHotelsByGeo(GeoDto geoDto, IHotelRepository repository)
         {
-            throw new NotImplementedException();
+            var responseGeo = await GetGeoLocation(geoDto);
+            var hotels = repository.GetHotels();
+            var hotelsByGeo = new List<GeoDtoHotelResponse>();
+            foreach (var hotel in hotels)
+            {
+                var location = await GetGeoLocation(new GeoDto { Address = hotel.address, City = hotel.cityName, State = hotel.state });
+                var distance = CalculateDistance(responseGeo.lat, responseGeo.lon, location.lat, location.lon);
+                hotelsByGeo.Add(new GeoDtoHotelResponse 
+                {
+                    HotelId = hotel.hotelId, 
+                    Name = hotel.name, 
+                    Address = hotel.address, 
+                    CityName = hotel.cityName, 
+                    State = hotel.state, 
+                    Distance = distance 
+                });
+            }
+            return hotelsByGeo.OrderBy(h => h.Distance).ToList();
         }
-
-       
 
         public int CalculateDistance (string latitudeOrigin, string longitudeOrigin, string latitudeDestiny, string longitudeDestiny) {
             double latOrigin = double.Parse(latitudeOrigin.Replace('.',','));
