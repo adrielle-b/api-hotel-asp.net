@@ -14,14 +14,14 @@ namespace TrybeHotel.Services
 
         // 11. Desenvolva o endpoint GET /geo/status
         public async Task<object> GetGeoStatus()
-        {
-            var response = await _client.GetAsync("https://nominatim.openstreetmap.org/status.php?format=json");
-            response.Headers.Add("Accept", "application/json");
-            response.Headers.Add("User-Agent", "aspnet-user-agent");
-
+        {   
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://nominatim.openstreetmap.org/status.php?format=json");
+            request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("User-Agent", "aspnet-user-agent");
+            var response = await _client.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
-                return default(Object);
+                return default(GeoDtoResponse);
             }
             var responseGeo = await response.Content.ReadFromJsonAsync<object>();
             return responseGeo;
@@ -29,10 +29,11 @@ namespace TrybeHotel.Services
         
         // 12. Desenvolva o endpoint GET /geo/address
         public async Task<GeoDtoResponse> GetGeoLocation(GeoDto geoDto)
-        {
-            var response = await _client.GetAsync($"https://nominatim.openstreetmap.org/search?street={geoDto.Address}&city={geoDto.City}&country=Brazil&state={geoDto.State}&format=json&limit=1");
-            response.Headers.Add("Accept", "application/json");
-            response.Headers.Add("User-Agent", "aspnet-user-agent");
+        {   
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://nominatim.openstreetmap.org/search?format=json&street={geoDto.Address}&city={geoDto.City}&state={geoDto.State}");
+            request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("User-Agent", "aspnet-user-agent");
+            var response = await _client.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
