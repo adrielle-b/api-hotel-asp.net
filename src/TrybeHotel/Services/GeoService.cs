@@ -30,7 +30,7 @@ namespace TrybeHotel.Services
         // 12. Desenvolva o endpoint GET /geo/address
         public async Task<GeoDtoResponse> GetGeoLocation(GeoDto geoDto)
         {   
-            var request = new HttpRequestMessage(HttpMethod.Get, $"https://nominatim.openstreetmap.org/search?format=json&street={geoDto.Address}&city={geoDto.City}&state={geoDto.State}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://nominatim.openstreetmap.org/search?street={geoDto.Address}&city={geoDto.City}&country=Brazil&state={geoDto.State}&format=json&limit=1");
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("User-Agent", "aspnet-user-agent");
             var response = await _client.SendAsync(request);
