@@ -20,7 +20,7 @@ namespace TrybeHotel.Services
             var response = await _client.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
-                return default(GeoDtoResponse);
+                return default!;
             }
             var responseGeo = await response.Content.ReadFromJsonAsync<object>();
             return responseGeo;
