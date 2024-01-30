@@ -1,0 +1,11 @@
+version: '3'
+services:
+  db:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: trybe_hotel_db_fase_c
+    ports:
+        - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=TrybeHotel12!
+      - MSSQL_PID=Developer
