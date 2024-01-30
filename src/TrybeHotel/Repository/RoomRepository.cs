@@ -12,7 +12,6 @@ namespace TrybeHotel.Repository
             _context = context;
         }
 
-        // 7. Refatore o endpoint GET /room
         public IEnumerable<RoomDto> GetRooms(int HotelId)
         {
             return _context.Rooms
@@ -34,7 +33,6 @@ namespace TrybeHotel.Repository
                 }).ToList();
         }
 
-        // 8. Refatore o endpoint POST /room
         public RoomDto AddRoom(Room room) 
         {
              _context.Rooms.Add(room);

@@ -11,7 +11,6 @@ namespace TrybeHotel.Repository
             _context = context;
         }
 
-        //  5. Refatore o endpoint GET /hotel
         public IEnumerable<HotelDto> GetHotels()
         {
             var hotels = _context.Hotels
@@ -31,7 +30,6 @@ namespace TrybeHotel.Repository
             return hotels.ToList();
         }
 
-        // 6. Refatore o endpoint POST /hotel
         public HotelDto AddHotel(Hotel hotel)
         {
             _context.Hotels.Add(hotel);

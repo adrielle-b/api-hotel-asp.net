@@ -11,7 +11,6 @@ namespace TrybeHotel.Repository
             _context = context;
         }
 
-        // 4. Refatore o endpoint GET /city
         public IEnumerable<CityDto> GetCities()
          {
             var cities = _context.Cities
@@ -24,7 +23,6 @@ namespace TrybeHotel.Repository
             return cities.ToList();
         }
 
-        // 2. Refatore o endpoint POST /city
         public CityDto AddCity(City city)
         {
             _context.Cities.Add(city);
@@ -37,7 +35,6 @@ namespace TrybeHotel.Repository
             };
         }
 
-        // 3. Desenvolva o endpoint PUT /city
         public CityDto UpdateCity(City city)
         {
             _context.Cities.Update(city);

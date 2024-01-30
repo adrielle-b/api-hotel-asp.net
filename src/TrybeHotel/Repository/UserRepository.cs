@@ -33,6 +33,7 @@ namespace TrybeHotel.Repository
                 UserType = userValid.UserType
             };
         }
+        
         public UserDto Add(UserDtoInsert user)
         {
             var newUser = new User {

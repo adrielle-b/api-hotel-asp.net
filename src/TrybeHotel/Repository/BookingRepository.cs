@@ -12,7 +12,6 @@ namespace TrybeHotel.Repository
             _context = context;
         }
 
-        // 9. Refatore o endpoint POST /booking
         public BookingResponse Add(BookingDtoInsert booking, string email)
         {
             var room = GetRoomById(booking.RoomId);
@@ -62,7 +61,6 @@ namespace TrybeHotel.Repository
             };
         }
 
-        // 10. Refatore o endpoint GET /booking
         public BookingResponse GetBooking(int bookingId, string email)
         {
             var bookingValid =  _context.Bookings.Include(u => u.User).FirstOrDefault(b => b.BookingId == bookingId);
