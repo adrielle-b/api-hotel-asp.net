@@ -23,7 +23,8 @@ namespace TrybeHotel.Controllers
         [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Authorize(Policy = "Admin")]
-        public IActionResult GetUsers(){
+        public IActionResult GetUsers()
+        {
             var token = HttpContext.User.Identity as ClaimsIdentity;
             var role = token?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
             if (role != "admin") return Unauthorized();

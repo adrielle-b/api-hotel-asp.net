@@ -10,11 +10,7 @@ using System.Text.Json;
 using System.Diagnostics;
 using System.Xml;
 using System.IO;
-
-public class LoginJson {
-    public string? token { get; set; }
-}
-
+using TrybeHotel.Dto;
 
 public class IntegrationTest: IClassFixture<WebApplicationFactory<Program>>
 {
@@ -75,14 +71,260 @@ public class IntegrationTest: IClassFixture<WebApplicationFactory<Program>>
             });
         }).CreateClient();
     }
- 
-    [Trait("Category", "Meus testes")]
-    [Theory(DisplayName = "Executando meus testes")]
-    [InlineData("/city")]
-    public async Task TestGet(string url)
+    public class LoginResponse {
+        public string? token { get; set; }
+    }
+    public class ErrorResponse {
+        public string? message { get; set; }
+    }
+
+    public StringContent convertBody(object objectToBody)
+    {
+        return new StringContent (
+            JsonConvert.SerializeObject(objectToBody),
+            System.Text.Encoding.UTF8,
+            "application/json"
+        );
+    }
+    public async Task<T> convertResponseType<T>(HttpResponseMessage response)
+    {
+        var responseString = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<T>(responseString);
+    }
+    public async Task<string> GetToken(string role)
+    {   
+        if (role == "admin") {
+        var loginAdmin = new {
+            Email = "ana@trybehotel.com",
+            Password = "Senha1"
+        };
+        var response = await _clientTest.PostAsync("/login", convertBody(loginAdmin));
+        
+        var admin = await convertResponseType<LoginResponse>(response);
+        return admin.token!;
+        }
+        if (role == "client") {
+            var loginClient = new {
+            Email = "beatriz@trybehotel.com",
+            Password = "Senha2"
+        };
+        var response = await _clientTest.PostAsync("/login", convertBody(loginClient));
+        
+        var client = await convertResponseType<LoginResponse>(response);
+        return client.token!;
+        }
+        return "";
+    }
+
+    public class CityPost {
+        public string? Name { get; set; }
+    }
+    public class HotelPost {
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+        public int CityId { get; set; }
+    }
+    public class RoomPost {
+        public string? Name { get; set; }
+        public int Capacity { get; set; }
+        public string? Image { get; set; }
+        public int HotelId { get; set; }
+    }
+
+    // USER
+    [Trait("Category", "Teste endpoint /user")]
+    [Theory(DisplayName = "GET /user")]
+    [InlineData("/user")]
+    public async Task TestGetUsers(string url)
+    {   
+        var token = await GetToken("admin");
+        _clientTest.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
+        var response = await _clientTest.GetAsync(url);
+        var responseUser = await convertResponseType<List<UserDto>>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(3, responseUser?.Count);     
+    }
+
+    [Trait("Category", "Teste endpoint /user")]
+    [Theory(DisplayName = "POST /user")]
+    [InlineData("/user")]
+    public async Task TestAddUser(string url)
+    {   
+        var newUser = new {
+            Name = "Pedro",
+            Email = "pedro@email.com",
+            Password = "Senha4",
+        };
+        var response = await _clientTest.PostAsync(url, convertBody(newUser));
+        var responseUser = await convertResponseType<User>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("Pedro", responseUser?.Name);
+        Assert.Equal("client", responseUser?.UserType);    
+    }
+
+    // LOGIN
+    [Trait("Category", "Teste endpoint /login")]
+    [Theory(DisplayName = "POST /login")]
+    [InlineData("/login")]
+    public async Task TestLogin(string url)
+    {
+        var login = new {
+            Email = "ana@trybehotel.com",
+            Password = "Senha1"
+        };
+        var response = await _clientTest.PostAsync(url, convertBody(login));
+        var responseLogin = await convertResponseType<LoginResponse>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEmpty(responseLogin.token);
+    }
+
+    [Trait("Category", "Teste endpoint /login")]
+    [Theory(DisplayName = "POST /login - Unauthorized")]
+    [InlineData("/login")]
+    public async Task TestLoginUnauthorized(string url)
+    {
+        var login = new {
+            Email = "ana@trybehotel.com",
+            Password = "Senha12"
+        };
+        var response = await _clientTest.PostAsync(url, convertBody(login));
+        var responseLogin = await convertResponseType<ErrorResponse>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("Incorrect e-mail or password", responseLogin.message);
+    }
+
+    // ROOM
+    [Trait("Category", "Teste endpoint /room")]
+    [Theory(DisplayName = "POST /room")]
+    [InlineData("/room")]
+    public async Task TestPostRoom(string url)
+    {
+         var token = await GetToken("admin");
+        _clientTest.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var newRoom = new RoomPost { 
+            Name = "Room 10", 
+            Capacity = 2, 
+            Image = "Image 10", 
+            HotelId = 1 
+        };
+     
+        var response = await _clientTest.PostAsync(url, convertBody(newRoom));
+        var responseRoom = await convertResponseType<RoomDto>(response);
+
+
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("Room 10", responseRoom.name);
+        Assert.Equal(2, responseRoom.capacity);
+    }
+
+    [Trait("Category", "Teste endpoint /room")]
+    [Theory(DisplayName = "GET /room")]
+    [InlineData("/room/1")]
+    public async Task TestGetRoom(string url)
     {
         var response = await _clientTest.GetAsync(url);
-        Assert.Equal(System.Net.HttpStatusCode.OK, response?.StatusCode);
+        var responseRoom = await convertResponseType<List<RoomDto>>(response);
+        var room = responseRoom.Find(r => r.name == "Room 1");
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(9, responseRoom?.Count);
+        Assert.Equal(1, room?.roomId);
+    }
+
+    [Trait("Category", "Teste endpoint /room")]
+    [Theory(DisplayName = "DELETE /room")]
+    [InlineData("/room/1")]
+    public async Task TestDeleteRoom(string url)
+    {
+        var token = await GetToken("admin");
+        _clientTest.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _clientTest.DeleteAsync(url);
+
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    // CITY
+    [Trait("Category", "Teste endpoint /city")]
+    [Theory(DisplayName = "POST /city")]
+    [InlineData("/city")]
+    public async Task TestPostCity(string url)
+    {
+        var newCity = new CityPost { Name = "São Paulo" };
+
+        var response = await _clientTest.PostAsync(url, convertBody(newCity));
+        var responseCity = await convertResponseType<CityDto>(response);
+       
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("São Paulo", responseCity.name);
     }
    
+    [Trait("Category", "Teste endpoint /city")]
+    [Theory(DisplayName = "GET /city")]
+    [InlineData("/city")]
+    public async Task TestGetCities(string url)
+    {
+        var response = await _clientTest.GetAsync(url);
+        var responseCity = await convertResponseType<List<CityDto>>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, responseCity.Count);
+    }
+
+    // HOTEL
+    [Trait("Category", "Teste endpoint /hotel")]
+    [Theory(DisplayName = "GET /hotel")]
+    [InlineData("/hotel")]
+    public async Task TestGetHotels(string url)
+    {
+        var response = await _clientTest.GetAsync(url);
+        var responseHotels = await convertResponseType<List<HotelDto>>(response);
+       
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(3, responseHotels?.Count);       
+    }
+
+    [Trait("Category", "Teste endpoint /hotel")]
+    [Theory(DisplayName = "POST /hotel")]
+    [InlineData("/hotel")]
+    public async Task TestPostHotel(string url)
+    {
+        var token = await GetToken("admin");
+        _clientTest.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var newHotel = new HotelPost { 
+            Name = "Hotel Rio de Janeiro", 
+            Address = "Address 4", 
+            CityId = 3 
+        };
+
+        var response = await _clientTest.PostAsync(url, convertBody(newHotel));
+        var responseHotel = await convertResponseType<HotelDto>(response);
+
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("Hotel Rio de Janeiro", responseHotel.name);
+    }
+
+    // BOOKING
+    [Trait("Category", "Teste endpoint /booking")]
+    [Theory(DisplayName = "GET /booking")]
+    [InlineData("/booking/1")]
+    public async Task TestGetBookings(string url)
+    {
+        var token = await GetToken("client");
+        _clientTest.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
+        var response = await _clientTest.GetAsync(url);
+        var responseBooking = await response.Content.ReadAsStringAsync();
+        var booking = JsonConvert.DeserializeObject<Booking>(responseBooking);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(1, booking?.BookingId);
+    }
+
 }

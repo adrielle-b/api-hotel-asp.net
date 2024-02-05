@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrybeHotel", "TrybeHotel\Tr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrybeHotel.test", "TrybeHotel.Test\TrybeHotel.test.csproj", "{1FC9B9C3-9779-43AA-8326-AD2A51014C83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrybeHotel.test.test", "TrybeHotel.Test.Test\TrybeHotel.test.test.csproj", "{A3CD7A4E-1625-4F55-9CBE-A6384C2CB232}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
